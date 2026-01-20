@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Progress Mail Generator</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+h2 {
+    color: #2d3748;
+    margin-bottom: 30px;
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+h3 {
+    color: #4a5568;
+    margin-bottom: 15px;
+    margin-top: 25px;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+h3::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin-right: 10px;
+    border-radius: 2px;
+}
+
+h3.dev-title::before {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+h3.bug-title::before {
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+h3.imp-title::before {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+}
+
+label {
+    font-weight: 600;
+    color: #4a5568;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+select, input[type="text"], input[type="date"] {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: #f7fafc;
+}
+
+select:focus, input[type="text"]:focus, input[type="date"]:focus {
+    outline: none;
+    border-color: #667eea;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.list-box {
+    margin-bottom: 20px;
+    min-height: 40px;
+}
+
+.item {
+    background: #fff;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #2d3748;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 2px solid #e2e8f0;
+}
+
+.item:hover {
+    border-color: #cbd5e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.item.dev-item {
+    border-left: 4px solid #48bb78;
+    background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+}
+
+.item.bug-item {
+    border-left: 4px solid #f56565;
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+}
+
+.item.imp-item {
+    border-left: 4px solid #ed8936;
+    background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+}
+
+.item-text {
+    flex: 1;
+}
+
+.remove-btn {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+
+.remove-btn:hover {
+    background: #c53030;
+    transform: scale(1.05);
+}
+
+.checkbox-group {
+    background: #f7fafc;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 10px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    margin: 12px 0;
+    cursor: pointer;
+    font-weight: 500;
+    color: #2d3748;
+    transition: all 0.2s ease;
+}
+
+.checkbox-group label:hover {
+    color: #667eea;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.capture-btn {
+    margin-top: 30px;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+}
+
+.capture-btn:hover {
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.6);
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.input-group input {
+    margin-bottom: 0;
+}
+
+.input-group button {
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+#notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: none;
+    z-index: 1000;
+    font-weight: 600;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.mode-selector {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    justify-content: center;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 15px;
+    background: #e2e8f0;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: none;
+}
+
+.mode-btn:hover {
+    background: #cbd5e0;
+    transform: translateY(0);
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.other-input {
+    margin-top: -10px;
+    margin-bottom: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Progress Mail Generator</h2>
+
+<div class="mode-selector">
+    <button class="mode-btn active" onclick="switchMode('commit')">Commit Progress</button>
+    <button class="mode-btn" onclick="switchMode('release')">Release Progress</button>
+</div>
+
+<div id="captureArea">
+
+<label>Project Name</label>
+<select id="project" onchange="handleOtherOption('project')">
+    <option>UDCoreBank</option>
+    <option>ClassManagement</option>
+    <option>Tracksy</option>
+    <option value="other">✓ Other</option>
+</select>
+<input type="text" id="projectOther" class="other-input hidden" placeholder="Enter project name...">
+
+<label>Employee Name</label>
+<select id="employee" onchange="handleOtherOption('employee')">
+    <option>Wenuka Lehan</option>
+    <option>Nethma Jayasinghe</option>
+    <option>Sandamini Isurika</option>
+    <option>Manula Minuwangoda</option>
+    <option value="other">✓ Other</option>
+</select>
+<input type="text" id="employeeOther" class="other-input hidden" placeholder="Enter employee name...">
+
+<!-- Commit Mode Fields -->
+<div id="commitFields">
+    <label>Commit Date</label>
+    <input type="date" id="commitDate">
+
+    <label>Commit Branch</label>
+    <input type="text" id="branch" placeholder="feature/login-fix">
+</div>
+
+<!-- Release Mode Fields -->
+<div id="releaseFields" class="hidden">
+    <label>Release Date</label>
+    <input type="date" id="releaseDate">
+
+    <label>Release Version</label>
+    <input type="text" id="version" placeholder="v1.2.0">
+
+    <label>Type</label>
+    <select id="releaseType" onchange="handleOtherOption('releaseType')">
+        <option>Front End</option>
+        <option>Back End</option>
+        <option value="other">✓ Other</option>
+    </select>
+    <input type="text" id="releaseTypeOther" class="other-input hidden" placeholder="Enter type...">
+</div>
+
+<h3 class="dev-title">Developments</h3>
+<div class="input-group">
+    <input type="text" id="devInput" placeholder="Enter development and press Enter..." onkeypress="handleEnter(event, 'dev')">
+    <button onclick="addItem('dev')">Add</button>
+</div>
+<div id="devList" class="list-box"></div>
+
+<h3 class="bug-title">Bug Fixes</h3>
+<div class="input-group">
+    <input type="text" id="bugInput" placeholder="Enter bug fix and press Enter..." onkeypress="handleEnter(event, 'bug')">
+    <button onclick="addItem('bug')">Add</button>
+</div>
+<div id="bugList" class="list-box"></div>
+
+<h3 class="imp-title">Improvements</h3>
+<div class="input-group">
+    <input type="text" id="impInput" placeholder="Enter improvement and press Enter..." onkeypress="handleEnter(event, 'imp')">
+    <button onclick="addItem('imp')">Add</button>
+</div>
+<div id="impList" class="list-box"></div>
+
+<!-- Commit Checklist -->
+<div id="commitChecklist">
+    <h3>Commit Checklist</h3>
+    <div class="checkbox-group">
+        <label><input type="checkbox"> Check errors and save all</label>
+        <label><input type="checkbox"> Check branch again</label>
+        <label><input type="checkbox"> Commit and push</label>
+        <label><input type="checkbox"> Get latest</label>
+        <label><input type="checkbox"> If conflict fix all</label>
+    </div>
+
+    <h3>PR Checklist</h3>
+    <div class="checkbox-group">
+        <label><input type="checkbox"> Commit branch is correct</label>
+        <label><input type="checkbox"> To branch is DEV</label>
+        <label><input type="checkbox"> PR created successfully</label>
+    </div>
+</div>
+
+<!-- Release Checklist -->
+<div id="releaseChecklist" class="hidden">
+    <h3>Release Checklist</h3>
+    <div class="checkbox-group">
+        <label><input type="checkbox"> All tests passed</label>
+        <label><input type="checkbox"> Code review completed</label>
+        <label><input type="checkbox"> Documentation updated</label>
+        <label><input type="checkbox"> Version number updated</label>
+        <label><input type="checkbox"> Release notes prepared</label>
+        <label><input type="checkbox"> Backup created</label>
+        <label><input type="checkbox"> Deployment successful</label>
+        <label><input type="checkbox"> Production verification done</label>
+    </div>
+</div>
+
+</div>
+
+<button class="capture-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+
+</div>
+
+<div id="notification">✓ Copied to clipboard!</div>
+
+<script>
+let currentMode = 'commit';
+
+function switchMode(mode) {
+    currentMode = mode;
+    
+    // Update button states
+    const buttons = document.querySelectorAll('.mode-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Toggle fields visibility
+    if (mode === 'commit') {
+        document.getElementById('commitFields').classList.remove('hidden');
+        document.getElementById('releaseFields').classList.add('hidden');
+        document.getElementById('commitChecklist').classList.remove('hidden');
+        document.getElementById('releaseChecklist').classList.add('hidden');
+    } else {
+        document.getElementById('commitFields').classList.add('hidden');
+        document.getElementById('releaseFields').classList.remove('hidden');
+        document.getElementById('commitChecklist').classList.add('hidden');
+        document.getElementById('releaseChecklist').classList.remove('hidden');
+    }
+}
+
+function handleOtherOption(fieldName) {
+    const select = document.getElementById(fieldName);
+    const otherInput = document.getElementById(fieldName + 'Other');
+    
+    if (select.value === 'other') {
+        select.style.display = 'none';
+        otherInput.classList.remove('hidden');
+        otherInput.focus();
+    }
+}
+
+function handleEnter(event, type) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        addItem(type);
+    }
+}
+
+function addItem(type) {
+    let input, list, itemClass;
+    if (type === 'dev') {
+        input = document.getElementById('devInput');
+        list = document.getElementById('devList');
+        itemClass = 'dev-item';
+    } else if (type === 'bug') {
+        input = document.getElementById('bugInput');
+        list = document.getElementById('bugList');
+        itemClass = 'bug-item';
+    } else {
+        input = document.getElementById('impInput');
+        list = document.getElementById('impList');
+        itemClass = 'imp-item';
+    }
+
+    if (input.value.trim() !== "") {
+        const div = document.createElement("div");
+        div.className = "item " + itemClass;
+        
+        const textSpan = document.createElement("span");
+        textSpan.className = "item-text";
+        textSpan.innerText = "• " + input.value;
+        
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-btn";
+        removeBtn.innerText = "✕ Remove";
+        removeBtn.onclick = function() {
+            div.remove();
+        };
+        
+        div.appendChild(textSpan);
+        div.appendChild(removeBtn);
+        list.appendChild(div);
+        input.value = "";
+    }
+}
+
+function showNotification() {
+    const notification = document.getElementById('notification');
+    notification.style.display = 'block';
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+
+async function copyToClipboard() {
+    const captureArea = document.getElementById("captureArea");
+    
+    try {
+        const canvas = await html2canvas(captureArea, {
+            backgroundColor: '#ffffff',
+            scale: 2
+        });
+        
+        canvas.toBlob(async (blob) => {
+            try {
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        'image/png': blob
+                    })
+                ]);
+                showNotification();
+            } catch (err) {
+                console.error('Failed to copy image: ', err);
+                alert('Failed to copy to clipboard. Please try again.');
+            }
+        });
+    } catch (err) {
+        console.error('Failed to capture image: ', err);
+        alert('Failed to capture image. Please try again.');
+    }
+}
+</script>
+
+</body>
+</html>
